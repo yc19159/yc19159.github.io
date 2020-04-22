@@ -1,0 +1,28 @@
+body, div, span, header, footer, nav, section, aside, article, ul, dl, dt, dd, li, a, p, h1, h2, h3, h4,h5, h6, i, b, textarea, button, input, select, figure, figcaption {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    // font-style: normal;
+    // text-decoration: none;
+    border: none;
+    // font-weight: normal;
+    // font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    box-sizing: border-box;
+    // -webkit-tap-highlight-color:transparent;
+    // -webkit-font-smoothing: antialiased;
+    // &:hover{
+    //     outline: none;
+    // }
+}
+button{
+    outline: none;
+}
+html {
+       font-size: 16px; 
+       font-size:calc(100vw/14.4);      //  适配    1440:100 = 100vw:x  14.4:1 = 100vw:x  x =100vw/14.4  
+       font-size:-webket-calc(100vw/14.4);   // 设计稿宽度 1440px 
+       
+    }
+.clearfix:after {
+    content:'.';display:block;height:0;clear:both;visibility:hidden;
+}
