@@ -134,7 +134,7 @@ export default {
         },
         whetherLogin(){
             if(localStorage.token){
-                this.$router.push({name:'orderList'})
+                this.$router.push({name:'orderList'})/*  */
             }
         },
 
