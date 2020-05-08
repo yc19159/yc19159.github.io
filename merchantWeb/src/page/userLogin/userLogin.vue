@@ -115,7 +115,8 @@ export default {
                 if(res.data.data.loginStatus=='1'){
                     localStorage.token=res.data.data.token
                     localStorage.userId=res.data.data.userId;
-                    localStorage.storeId=res.data.data.storeId;
+                    sessionStorage.storeId=res.data.data.storeId;
+                    //1
                     localStorage.channelId=this.channelId;
                     console.log(res)
                     this.$router.push({name:'orderList'})
