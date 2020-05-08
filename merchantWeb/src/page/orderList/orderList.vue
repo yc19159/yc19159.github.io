@@ -6,11 +6,11 @@
                 <img src="../../assets/img/loginLogo.png" alt="" class="logo">
                 <span class="line"></span>
                 <p class="descLogin">商户系统</p>
-       
+
             <div class="topRight">
-                 <span class="quota">本月营业额:  </span><span :style="{'cloor':'#F75745','float':'left'}">{{100}}</span>
-                 <span class="orderNum">本月订单数:</span><span :style="{'cloor':'#F75745','float':'left'}">{{100}}</span>
-                 <div class="statusCtrl">
+                 <!-- <span class="quota">本月营业额:  </span><span :style="{'cloor':'#F75745','float':'left'}">{{100}}</span>
+                 <span class="orderNum">本月订单数:</span><span :style="{'cloor':'#F75745','float':'left'}">{{100}}</span> -->
+                 <div class="statusCtrl" @click="logOut">
                      <img class="close" src="../../assets/img/orderListClose.png" alt="">
                      <p class="logout">注销</p>
                  </div>
@@ -28,123 +28,799 @@
         <div class="orderStatus">
             <!-- 订单状态 -->
             <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
-                <el-tab-pane label="新订单" name="first">
-                    <div class="newOrder clearfix">
-                        <div class="clearfix orderDetail">
-                            <!-- 订单详情 -->
-                            <div class="newOrderLeft clearfix">
-                                <div :style="{'width':'2.33rem'}" class="clearfix">
-                                        <p class="number">9号</p>
-                                        <p class="takeOut">外卖订单</p>
-                                        <p class="time">2020-02-02 12:22</p>
+                <el-tab-pane label="新订单" name="first" >
+                   <div class="containNewOrder" v-if="this.activeName=='first'">
+                        <van-list
+                        v-model="loading"
+                         loading-text=' '
+                        :finished="finished"
+                        :finished-text="panduanLength"
+                        @load="onLoad"
+                        >
+                         <!-- <div :style="{'min-height':'4.9rem'}"> -->
+                            <div  v-for="(item , i) in myOrderList" ref="merchantOrder" class="newOrder clearfix" :key="i" >
+                                <div class="checkStatus" ref="checkStatus" v-if="checkStatus">
+                                    <div class="unchecked" @click="changeChecked(i)" ref="checked" v-model="checkedValue">
+                                    {{checkedValue}}
                                     </div>
-                                <div class="kehu">
-                                    <span class="kehuName">曹先生</span>
-                                    <span class="kehuMobile">13227772222</span>
-                                    <span class="distance">9km</span>
-                                    <p class="address">虎成广场秀康面馆旁 虎成街一号</p>
                                 </div>
-                                <div class="fee">
-                                    <span class="distributeFee">配送费：¥7</span>
-                                    <p class="actualFee">顾客实付金额：¥17</p>
-                                </div>            
-                                    <div class="distribute">
-                                            <button class="zjDis">自己配送</button>
-                                            <button class="ptDis">平台配送</button>
-                                            <button class="printOrder">打印订单</button>
-                                           
+                                <div class="clearfix orderDetail" :class="checkStatus? 'smallOrderdetail':'orderDetail'" ref="orderDetail" >
+                                    <!-- 订单详情 -->
+                                    <div class="newOrderLeft clearfix">
+                                        <div :style="{'border-right': '2px dashed #CECECE',}">
+                                            <div :style="{'width':'2.33rem'}" class="clearfix">
+                                                    <p class="number">{{item.orderNum}}号</p>
+                                                    <p class="takeOut">外卖订单</p>
+                                                    <p class="time">{{item.createTime}}</p>
+                                                </div>
+                                            <div class="kehu">
+                                                <span class="kehuName">{{item.user.userName}}</span>
+                                                <span class="kehuMobile">{{item.user.userPhone}}</span>
+                                                <span class="distance">{{item.deliveryDistance}}m</span>
+                                                <p class="address">{{item.user.address}}</p>
+                                            </div>
+                                            <div class="fee">
+                                                <span class="distributeFee">配送费：¥{{(item.deliveryMoney/100).toFixed(2)}}</span>
+                                                <p class="actualFee">顾客实付金额：¥{{(item.wmo_pay_money/100).toFixed(2)}}</p>
+                                            </div>
+                                            <div class="beiZhu" :style="{'width':'2.23rem','margin-top':'0.1rem'}">
+                                                 <p>备注： {{item.remark}}</p>
+                                            </div>
+                                        </div>
+                                            <div class="distribute" ref="distribute">
+                                                    <button v-if="item.type==1" class="zjDis" @click="deliver(1,item.orderSn,i,item.type,1)">自己配送</button>
+                                                    <button v-if="item.type==1" class="ptDis" @click="deliver(2,item.orderSn,i,item.type,1)">平台配送</button>
+                                                    <!-- <button class="printOrder" v-if="!checkStatus" @click="printOrder(i)">打印订单</button> -->
+                                                    <button v-if="item.type==2" class="finish" @click="deliver(6,item.orderSn,i,item.type,2)">完成</button>
+                                            </div>
+                                    </div>
+                                    <div class="neworderRight clearfix">
+                                        <div class="orderInfo" v-for="(goods , index) in item.goods" :key="index">
+                                            <img :src="goods.goodsImage" alt="图片" class="goodsImg">
+                                            <p class="goodsName">{{goods.goodsName}}</p>
+                                            <p class="goodsNum">X{{goods.number}}</p>
+                                            <p class="goodsPrice">¥{{(goods.totalPrice/100).toFixed(2)}}</p>
+                                        </div>
+
                                     </div>
                             </div>
-                            <div class="neworderRight clearfix">
-                                <div class="orderInfo">
-                                    <img src="" alt="图片" class="goodsImg">
-                                    <p class="goodsName">秀康面馆超值套餐值套餐</p>
-                                    <p class="goodsNum">X1</p>
-                                    <p class="goodsPrice">¥9.99</p>
-                                </div>
-                                
                             </div>
-                       </div>
-                     
+                             <div v-if="!isLoading&&myOrderList.length==0" class="noOrder">
+                                <img src="../../assets/img/orderListNoOrder.png" alt="">
+                                <p >暂无订单信息</p>
+                            </div>
+                            <div v-if="isLoading" class="loading" :style="{'margin-top':'0.1rem','margin-left':'0.16rem'}">
+                                loading......
+                            </div>
+                         <!-- </div>   -->
+                        </van-list>
                     </div>
-                     
-                    <button class="batchPrint" @click="batchPrint" ref="batchPrintButton">批量打印</button>
+
+
+                </el-tab-pane>
+                <el-tab-pane label="待配送" name="second">
+                    <div class="containNewOrder" v-if="this.activeName=='second'">
+                         <van-list
+                        v-model="loading"
+                         loading-text=' '
+                        :finished="finished"
+                        :finished-text="panduanLength"
+                        @load="onLoad"
+                        >
+                         <!-- <div :style="{'min-height':'4.9rem'}"> -->
+                            <div v-for="(item , i) in myOrderList" ref="merchantOrder" class="newOrder clearfix" :key="i">
+                                <div class="checkStatus" ref="checkStatus2" v-if="checkStatus">
+                                    <div class="unchecked" @click="changeChecked(i)" ref="checked" v-model="checkedValue">
+                                    {{checkedValue}}
+                                    </div>
+                                    <!-- <img v-if="isPrint" src="../../assets/img/orderListUnchecked.png" alt="" class="unchecked" @click="changeChecked(i)">
+                                    <img v-else src="../../assets/img/orderListUnchecked.png" alt="" class="unchecked" @click="changeChecked(i)"> -->
+                                </div>
+                                <div class="clearfix orderDetail" :class="checkStatus? 'smallOrderdetail':'orderDetail'" ref="orderDetail2" >
+                                    <!-- 订单详情 -->
+                                    <div class="newOrderLeft clearfix">
+                                        <div :style="{'border-right': '2px dashed #CECECE',}">
+                                            <div :style="{'width':'2.33rem'}" class="clearfix">
+                                                    <p class="number">{{item.orderNum}}号</p>
+                                                    <p class="takeOut">外卖订单</p>
+                                                    <p class="time">{{item.createTime}}</p>
+                                                </div>
+                                            <div class="kehu">
+                                                <span class="kehuName">{{item.user.userName}}</span>
+                                                <span class="kehuMobile">{{item.user.userPhone}}</span>
+                                                <span class="distance">{{item.deliveryDistance}}m</span>
+                                                <p class="address">{{item.user.address}}</p>
+                                            </div>
+                                            <div class="fee">
+                                                <span class="distributeFee">配送费：¥{{(item.deliveryMoney/100).toFixed(2)}}</span>
+                                                <p class="actualFee">顾客实付金额：¥{{(item.wmo_pay_money/100).toFixed(2)}}</p>
+                                            </div>
+                                            <div class="beiZhu" :style="{'width':'2.23rem','margin-top':'0.1rem'}">
+                                                 <p>备注： {{item.remark}}</p>
+                                            </div>
+                                        </div>
+                                            <div class="distribute" >
+                                                    <button v-if="item.deliveryType==1" @click="deliver(5,item.orderSn,i,2,1)">出发</button>
+                                                    <button class="printOrder" v-if="!checkStatus" @click="printOrder(i)">打印订单</button>
+
+                                            </div>
+                                    </div>
+                                    <div class="neworderRight clearfix">
+                                        <div class="orderInfo" v-for="(goods , index) in item.goods" :key="index">
+                                            <img :src="goods.goodsImage" alt="图片" class="goodsImg">
+                                            <p class="goodsName">{{goods.goodsName}}</p>
+                                            <p class="goodsNum">X{{goods.number}}</p>
+                                            <p class="goodsPrice">¥{{(goods.totalPrice/100).toFixed(2)}}</p>
+                                        </div>
+
+                                    </div>
+                            </div>
+                            </div>
+                             <div v-if="!isLoading&&myOrderList.length==0" class="noOrder">
+                                <img src="../../assets/img/orderListNoOrder.png" alt="">
+                                <p >暂无订单信息</p>
+                            </div>
+                            <div v-if="isLoading" class="loading" :style="{'margin-top':'0.1rem','margin-left':'0.16rem'}">
+                                loading......
+                            </div>
+                         <!-- </div> -->
+                        </van-list>
+                    </div>
+
+                </el-tab-pane>
+                <el-tab-pane label="配送中" name="third">
+                    <div class="containNewOrder" v-if="this.activeName=='third'">
+                       <van-list
+                        v-model="loading"
+                         loading-text=' '
+                        :finished="finished"
+                        :finished-text="panduanLength"
+                        @load="onLoad"
+                        >
+                        <!-- <div :style="{'min-height':'4.9rem'}"> -->
+                            <div v-for="(item , i) in myOrderList" ref="merchantOrder" class="newOrder clearfix" :key="i">
+                                <div class="checkStatus" ref="checkStatus3" v-if="checkStatus">
+                                    <div class="unchecked" @click="changeChecked(i)" ref="checked" v-model="checkedValue">
+                                    {{checkedValue}}
+                                    </div>
+                                </div>
+                                <div class="clearfix orderDetail" :class="checkStatus? 'smallOrderdetail':'orderDetail'" ref="orderDetail3" >
+                                    <!-- 订单详情 -->
+                                    <div class="newOrderLeft clearfix">
+                                        <div :style="{'border-right': '2px dashed #CECECE',}">
+                                            <div :style="{'width':'2.33rem'}" class="clearfix">
+                                                    <p class="number">{{item.orderNum}}号</p>
+                                                    <p class="takeOut">外卖订单</p>
+                                                    <p class="time">{{item.createTime}}</p>
+                                                </div>
+                                            <div class="kehu">
+                                                <span class="kehuName">{{item.user.userName}}</span>
+                                                <span class="kehuMobile">{{item.user.userPhone}}</span>
+                                                <span class="distance">{{item.deliveryDistance}}m</span>
+                                                <p class="address">{{item.user.address}}</p>
+                                            </div>
+                                            <div class="fee">
+                                                <span class="distributeFee">配送费：¥{{(item.deliveryMoney/100).toFixed(2)}}</span>
+                                                <p class="actualFee">顾客实付金额：¥{{(item.wmo_pay_money/100).toFixed(2)}}</p>
+                                            </div>
+                                            <div class="beiZhu" :style="{'width':'2.23rem','margin-top':'0.1rem'}">
+                                                 <p>备注： {{item.remark}}</p>
+                                            </div>
+                                        </div>
+                                            <div class="distribute" ref="distribute3">
+                                                     <button v-if="item.deliveryType==1" @click="deliver(6,item.orderSn,i,2,1)">送达</button>
+                                                    <button class="printOrder" v-if="!checkStatus" @click="printOrder(i)">打印订单</button>
+
+                                            </div>
+                                    </div>
+                                    <div class="neworderRight clearfix">
+                                        <div class="orderInfo" v-for="(goods , index) in item.goods" :key="index">
+                                            <img :src="goods.goodsImage" alt="图片" class="goodsImg">
+                                            <p class="goodsName">{{goods.goodsName}}</p>
+                                            <p class="goodsNum">X{{goods.number}}</p>
+                                            <p class="goodsPrice">¥{{(goods.totalPrice/100).toFixed(2)}}</p>
+                                        </div>
+
+                                    </div>
+                            </div>
+                            </div>
+                            <div v-if="!isLoading&&myOrderList.length==0" class="noOrder">
+                                <img src="../../assets/img/orderListNoOrder.png" alt="">
+                                <p >暂无订单信息</p>
+                            </div>
+                            <div v-if="isLoading" class="loading" :style="{'margin-top':'0.1rem','margin-left':'0.16rem'}">
+                                loading......
+                            </div>
+                            <!-- </div> -->
+                        </van-list>
+                    </div>
+
+                </el-tab-pane>
+                <el-tab-pane label="已完成" name="fourth">
+                      <div class="containNewOrder" v-if="this.activeName=='fourth'">
+                           <van-list
+                            v-model="loading"
+                             loading-text=' '
+                            :finished="finished"
+                            :finished-text="panduanLength"
+                            @load="onLoad"
+                            >
+                            <!-- <div :style="{'min-height':'4.9rem'}"> -->
+                            <div v-for="(item , i) in myOrderList" ref="merchantOrder" class="newOrder clearfix" :key="i">
+                                <div class="checkStatus" ref="checkStatus4" v-if="checkStatus">
+                                    <div class="unchecked" @click="changeChecked(i)" ref="checked" v-model="checkedValue">
+                                    {{checkedValue}}
+                                    </div>
+                                    </div>
+                                    <div class="clearfix orderDetail" :class="checkStatus? 'smallOrderdetail':'orderDetail'" ref="orderDetail4" >
+                                    <!-- 订单详情 -->
+                                    <div class="newOrderLeft clearfix">
+                                        <div class="clearfix" :style="{'border-right': '2px dashed #CECECE',}">
+                                            <div :style="{'width':'2.33rem'}" class="clearfix">
+                                                    <p class="number">{{item.orderNum}}号</p>
+                                                    <p class="takeOut">外卖订单</p>
+                                                    <p class="time">{{item.createTime}}</p>
+                                                </div>
+                                            <div class="kehu">
+                                                <span class="kehuName">{{item.user.userName}}</span>
+                                                <span class="kehuMobile">{{item.user.userPhone}}</span>
+                                                <span class="distance">{{item.deliveryDistance}}m</span>
+                                                <p class="address">{{item.user.address}}</p>
+                                            </div>
+                                            <div class="fee">
+                                                <span class="distributeFee">配送费：¥{{(item.deliveryMoney/100).toFixed(2)}}</span>
+                                                <p class="actualFee">顾客实付金额：¥{{(item.wmo_pay_money/100).toFixed(2)}}</p>
+                                            </div>
+                                            <div class="beiZhu" :style="{'width':'2.23rem','margin-top':'0.1rem'}">
+                                                 <p>备注： {{item.remark}}</p>
+                                            </div>
+                                        </div>
+                                            <div class="distribute" ref="distribute4">
+
+                                                    <button class="printOrder" v-if="!checkStatus" @click="printOrder(i)">打印订单</button>
+
+                                            </div>
+                                    </div>
+                                    <!-- <div> -->
+                                    <div class="neworderRight clearfix">
+                                        <!-- <div class="clearfix" :style="{'box-sizing':'border-box'}"> -->
+                                        <div class="orderInfo" v-for="(goods , index) in item.goods" :key="index">
+                                            <img :src="goods.goodsImage" alt="图片" class="goodsImg">
+                                            <p class="goodsName">{{goods.goodsName}}</p>
+                                            <p class="goodsNum">X{{goods.number}}</p>
+                                            <p class="goodsPrice">¥{{(goods.totalPrice/100).toFixed(2)}}</p>
+                                        </div>
+                                        <!-- </div> -->
+                                    </div>
+                                    <!-- </div> -->
+                                    </div>
+                                </div>
+                                 <div v-if="!isLoading&&myOrderList.length==0" class="noOrder">
+                                        <img src="../../assets/img/orderListNoOrder.png" alt="">
+                                        <p >暂无订单信息</p>
+                                </div>
+                                <div v-if="isLoading" class="loading" :style="{'margin-top':'0.1rem','margin-left':'0.16rem'}">
+                                 loading......
+                               </div>
+                            <!-- </div> -->
+                     </van-list>
+                    </div>
+
+                </el-tab-pane>
+
+            </el-tabs>
+            <button v-if="this.activeName!='first'&&!checkStatus" class="batchPrint" @click="batchPrint" ref="batchPrintButton">批量打印</button>
                      <div class="sureOrCancle" ref="sureOrCancle">
                         <button class="sure" @click="surePrint">确认打印</button>
                         <button class="cancle" @click="cancleBatchPrint">取消批量打印</button>
                     </div>
-                </el-tab-pane>
-                <el-tab-pane label="待配送" name="second">配置管理</el-tab-pane>
-                <el-tab-pane label="配送中" name="third">角色管理</el-tab-pane>
-                <el-tab-pane label="已完成" name="fourth">定时任务补偿</el-tab-pane>
-                
-            </el-tabs>
             <div class="print">
-                <div class="printTop" v-if="state==1">
+                <!-- <div class="printTop" v-if="state==1">
                         <p class="printTitle">打印机</p>
-                        <p class="printType">XP-58</p>
-                        <p class="printPage">打印支持纸张</p>
-                        <p class="pageContent">P5000X20000</p>
-                        <button class="check">检查</button>
-                </div>
-                <div class="printTop" v-if="state==2">
+                        <p class="printType">{{printType}}</p> -->
+                        <!-- <p class="printPage">支持纸张</p> -->
+                        <!-- <p class="pageContent"><span v-for="(item , i) in printPaper" :key='i'> {{item}}</span> </p> -->
+                        <!-- <button class="check" @click="checkPrint" ref="checkButton">检查</button> -->
+                <!-- </div> -->
+                <!-- <div class="printTop" v-if="printStatus==3">
                         <p class="printTitle">打印机</p>
                         <p class="breaking">已断开</p>
 
-                </div>
-                <div class="printStatus">打印任务进行中，共打印10条，正在打印第一条</div>
-                <div class="preview clearfix">
-                        <p class="previewDecs">对账单预览</p>
+                </div> -->
+                <!-- <div class="printQueue" v-if="printing">打印任务进行中，共打印10条，正在打印第一条</div> -->
+                <div class="preview clearfix" v-if="state==1">
+                        <!-- <p class="previewDecs">对账单预览</p> -->
                         <div class="bg_PrintData">
-                        <div id="PrintData" :style="{'border':'1px dashed red' ,'text-align':'center','padding':'0px','width':'80%','margin': '0px'}"></div>
-                        <!-- <div id="PrintData" :style="{'border' : '1px dashed red','text-align':'center','padding':'0px','width':'232px'}"></div> -->
+                        <!-- <div id="PrintData" :style="{'border':'1px dashed red' ,'text-align':'center','padding':'0px','width':'80%','margin': '0px'}"></div> -->
+                        <div class="print">
+                            <iframe
+                                :src="'http://alpha-push.fpwan.com/usbPrint?token='+loginToken"
+                                frameborder="0"
+                                width="100%"
+                                height="100%"
+                                scrolling="yes"
+                            ></iframe>
+                </div>
                         </div>
                 </div>
+                <div class="preview clearfix" v-if="state==3">
+                         <p class="previewDecs">还未添加打印机</p>
+                         <div class="bg_PrintData" :style="{'height':'5.04rem'}">
+                            <!-- <div id="PrintData" :style="{'border':'1px dashed red' ,'text-align':'center','padding':'0px','width':'80%','margin': '0px'}"></div> -->
+                            <img src="../../assets/img/orderListPrintMsg.png" alt="" class="unAddPrintImg">
+                            <p :style="{'text-align': 'center','margin-top':'0.15rem','font-size':'0.14rem'}">打印机背面</p>
+                            <div class="printDetail">
+                                <div>
+                                    <span >打印机型号</span>
+                                    <select v-model="getPrintModel">
+                                        <option v-for="(item , i) in printModel"  :value="i*1+1" :key="i">{{item.model}}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <span >接口类型</span>
+                                    <select v-model="getInterfaceType">
+                                        <option v-for="(item , i) in interfaceType"  :value="i*1+1" :key="i">{{item.name}}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <span >打印纸宽</span>
+                                    <select v-model="getPaperWidth">
+                                        <option v-for="(item , i) in paperWidth" :value="i*1+1" :key="i">{{item.name}}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <span >USB+蓝牙编码</span>
+                                    <input v-model="sn" type="text">
+                                </div>
+                                <button class="addPrint" @click="addPrint">添加打印机</button>
+                            </div>
+                         </div>
+                </div>
         </div>
         </div>
-       
+
 
     </div>
-    <foot></foot>
+    <div class="printStatus" ref="printPopup">
+        <!-- 点击检查后弹出层 -->
+           <div class="statusContent" v-if="printStatus==1" @click="popupClose">
+                <p class="statusTitle">正在检查打印机，请稍后</p>
+                <img src="../../assets/img/orderListState1.png" alt="" class="loadingImg">
+                <img src="../../assets/img/orderListPrint.png" alt="" class="printImg">
+           </div>
+           <div class="statusContent" v-if="printStatus==2" @click="popupClose">
+                <p class="statusTitle">打印机连接正常</p>
+                <img src="../../assets/img/orderListState2.png" alt="" class="state2Img">
+                <img src="../../assets/img/orderListPrint.png" alt="" class="printImg">
+                <button class="printStatusSure">确定</button>
+           </div>
+           <div class="statusContent" v-if="printStatus==3" @click="popupClose">
+                <p class="statusTitle">打印机已断开</p>
+                <img src="../../assets/img/orderListState3.png" alt="" class="state3Img">
+                <img src="../../assets/img/orderListPrint.png" alt="" class="printImg">
+                <button class="printStatusSure">确定</button>
+           </div>
+    </div>
+    <orderFoot></orderFoot>
     </div>
 </template>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js" type="text/javascript"></script>
+
 
 <script>
 
-import foot from '@/components/foot.vue';
+import orderFoot from '@/components/orderFoot.vue';
+import {getList , orderTaking,getPrintOrder,getSn,getPrinterData,printConnect} from '../../service/getData'
+import Vue from 'vue';
+import { List } from 'vant';
+
+// import library from "../../service/browserPrint.js";
+
+Vue.use(List);
+
+
 export default {
     data() {
         return {
+            isLoading: true,//判断是否在加载数据
             activeName: 'first',
-            state: 1,
+            state: 3,
+            printStatus: 1,
+            myOrderList:[],
+            oldShuaxinOrderList:[],
+            shuaxinOrderList:[],
+            checkedValue: '√',
+            printing: true,
+            status: 2,
+            loading: false,
+            finished: false,
+            page: 1,
+            isPrint: true,
+            // htmlDom:'',
+            printType: '',
+            printPaper: [],
+            sn: '',
+            printModel:[],  //打印机型号
+            getPrintModel: 1,
+            interfaceType: [], //打印机型号
+            getInterfaceType: 1,
+            paperWidth: [], //打:印纸宽
+            getPaperWidth:1,
+            checkPrintModel: '',
+            checkStatus: false,//是否展示check
+            loginToken: '',
+            panduanLength: '',//判断是否显示更多
+            timer: null,
+           
         }
     },
     components:{
-        foot
+        orderFoot,
     },
     methods: {
-         handleClick(tab, event) {
-           console.log(tab, event);
-          } ,
+         shuaxin(){
+            
+              this.timer=setInterval(() =>{
+                    //    this.myOrderList=[];
+                      let shuaxinParams={
+                        token: localStorage.token,
+                        channelId: localStorage.channelId,
+                        type: 0,
+                        status: 2,
+                        page: 1,
+                        pageSize: 10,
+                        userId: localStorage.userId,
+                        delivery: 0,
+                        identity: 2,
+                        storeId: localStorage.storeId
+                    }
+                   getList(shuaxinParams).then(res=>{
+                       console.log('刷新后数据长度'+res.data.data.list.length)
+
+                       if(res.data.data.list.length>0){
+                           this.shuaxinOrderList=res.data.data.list;
+                           if(this.shuaxinOrderList[0].orderSn!=this.oldShuaxinOrderList[0].orderSn){
+                            //    this.$alert('有新订单生产，我们以为您刷新');
+                               this.activeName='first';
+                               this.myOrderList=res.data.data.list;
+                               this.loading=false;
+                               this.finished=false;
+                               this.page=2;
+                               this.oldShuaxinOrderList=this.shuaxinOrderList;
+                           }
+                    //    console.log(this.shuaxinOrderList)
+                    //  console.log('myOrderList长度'+this.myOrderList.length)
+                       }
+                       
+                   })
+              },5000)
+           },
+          useGetPrinterData(){
+                var printDataParam={
+                    token: localStorage.token
+                }
+                getPrinterData(printDataParam).then(res=>{
+                    console.log('AAAAAAAA======GetPtintData')
+                    console.log(res.data.data)
+                    this.printModel=res.data.data.model;
+                    this.interfaceType=res.data.data.interfaceType;
+                    this.paperWidth=res.data.data.paper;
+                })
+          },
+          getPrintSn(){
+              var getSnparam={
+                   token:localStorage.token
+                  };
+                //   console.log("getPrintSn===================");
+                getSn(getSnparam).then(res=>{
+                  if(res.data.data.flag==1){
+                      this.state=1
+                  this.printType=res.data.data.device[0].model;
+                  this.sn=res.data.data.device[0].sn;
+                  }else{
+                      this.state=3
+                  }
+                 
+                //   console.log(this.sn);
+                  console.log(res)
+              });
+
+          },
+          printOrder(index){
+                  var orderParam={
+                  token: localStorage.token,
+                  ids: this.myOrderList[index].orderSn,
+                  sn: this.sn
+                 }
+                 
+                   getPrintOrder(orderParam).then(res=>{
+                          console.log(this.sn)
+                             console.log("printOrder===================");
+                             console.log(res)
+                        })
+          },
+          addPrint(){
+             console.log(this.getPrintModel)   
+        //    console.log(this.getInterfaceType)
+        //    console.log(this.getPaperWidth)
+             var addPrintParam={
+                 token: localStorage.token,
+                 sn: this.sn,
+                 interfaceType: this.getInterfaceType,
+                 paper: this.getPaperWidth,
+                 model: this.getPrintModel,
+
+             };
+               console.log(this.sn)
+             printConnect(addPrintParam).then(res=>{
+                 console.log(res);
+                 if(res.data.code==0){
+                     this.state=1
+                 }
+             })
+          },
+          changeOrderDom(){
+             
+          },
           batchPrint(){
-              this.$refs.batchPrintButton.style.display='none';
+            //   this.$refs.batchPrintButton.style.display='none';
               this.$refs.sureOrCancle.style.display='block';
+              this.checkStatus=true;
+
           },
           cancleBatchPrint(){
-              this.$refs.batchPrintButton.style.display='block';
+            //   this.$refs.batchPrintButton.style.display='block';
               this.$refs.sureOrCancle.style.display='none';
+              this.checkStatus=false;
+
           },
           surePrint(){
-              alert('1')
+               var idsList=[]
+              for(var i=0;i<this.myOrderList.length;i++){
+                    // console.log(this.$refs.checked[i].className)
+                    if(this.$refs.checked[i].className=='checked'){
+                       idsList.push(this.myOrderList[i].orderSn);
+                    }
+                }
+                 idsList=idsList.join('|')
+                  console.log(idsList);
+                  var batchPrintParam={
+                     token: localStorage.token,
+                     ids: idsList,
+                     sn: this.sn
+                  }
+                 
+                  getPrintOrder(batchPrintParam).then(res =>{
+                    console.log(res)
+                  })
+            //  if(this.activeName=='first'){
+            //     for(var i=0;i<this.myOrderList.length;i++){
+            //         if(this.$refs.checked[i].className=='checked'){
+            //         console.log(this.$refs.merchantOrder[i])
+            //         }
+            //     }
+            //  }else if(this.activeName=='second'){
+            //    for(var i=0;i<this.myOrderList.length;i++){
+            //         console.log(this.$refs.checked[i].className)
+            //         if(this.$refs.checked[i].className=='checked'){
+
+            //             console.log(this.$refs.merchantOrder[i])
+            //         }
+            //     }
+            //  }else if(this.activeName='third'){
+
+            //  }else{
+
+            //  }
+          },
+          checkPrint(){
+            //   this.$refs.printPopup.style.display='block';
+            //  this.CheckPrinterStatus()
+
+             this.obj.CheckPrinterStatus()
+          },
+          //点击屏幕检查之外的地方弹出层消失
+          popupClose(){
+              var that=this;
+            //  document.onclick=function(e){
+                //  console.log(1)
+                //  if(e.target!=that.$refs.checkButton){
+                     that.$refs.printPopup.style.display='none';
+                //  }
+            //  }
+        },
+          //改变选择状态
+          changeChecked(i){
+              document.onclick=function(e){
+                  if(e.target.className=='checked'){
+                     e.target.className='unchecked';
+                     this.checkedValue='';
+                  //    console.log( e.target.innerHtml)
+                  }else if(e.target.className=='unchecked'){
+                     e.target.className='checked';
+                    this.checkedValue='√';
+                     console.log(e.target.innerHtml)
+                  }
+              }
+              // if(this.$refs.checked[i].className=='checked'){
+              //     this.$refs.checked[i].className='unchecked';
+              //     for(var i=0; i<this.$refs[unchecked].length;i++){
+              //      this.$refs.unchecked[i].innerHtml='';
+              //     }
+
+              // }else{
+              //     this.$refs.checked[i].className='checked';
+              // }
+
+          },
+          getOldOrderList(){
+             let oldParams={
+                token: localStorage.token,
+                channelId: localStorage.channelId,
+                type: 0,
+                status: 2,
+                page: 1,
+                pageSize: 10,
+                userId: localStorage.userId,
+                delivery: 0,
+                identity: 2,
+                storeId: localStorage.storeId
+            };
+             getList(oldParams).then(res => {
+                        this.oldShuaxinOrderList=res.data.data.list;
+                        console.log('oldShuaxinOrderList=====yc')
+                        console.log(this.oldShuaxinOrderList)
+                  
+             })
+
+          },
+          useGetList(){
+
+            let params={
+                token: localStorage.token,
+                channelId: localStorage.channelId,
+                type: 0,
+                status: this.status,
+                page: this.page,
+                pageSize: 10,
+                userId: localStorage.userId,
+                delivery: 0,
+                identity: 2,
+                storeId: localStorage.storeId
+            }
+
+              getList(params).then((res)=>{
+                 
+                  if(res.data.data.list.length>0){
+                        for (var i=0; i<res.data.data.list.length;i++){
+                            this.myOrderList.push(res.data.data.list[i])
+                        }
+                         console.log('有长度')
+                         this.panduanLength='没有更多订单了';
+                    }else{
+                         console.log('没有长度')
+                          this.panduanLength='';
+                    } 
+                   this.isLoading=false;
+                  this.page++
+                  this.loading=false;
+                  if(res.data.data.list.length < 10){
+                   
+                    this.finished = true
+                  }
+                  console.log(res)
+                  console.log(this.myOrderList)
+                  
+              })
+          },
+
+          handleClick(){
+            //   this.$refs.batchPrintButton.style.display='block';
+              this.checkStatus=false;
+              this.$refs.sureOrCancle.style.display='none';
+                this.myOrderList=[];
+                this.page=1;
+                this.loading=false;
+                this.finished=false;
+                this.isLoading=true;
+               if(this.activeName=='first'){
+                this.status=2
+               }else if(this.activeName=='second'){
+                  this.status=[3,4]
+               }else if(this.activeName=='third'){
+                   this.status=5
+               }else{
+                  this.status=[6,8,9,10]
+              }
+            //   this.useGetList();
+              this.onLoad()
+          },
+          deliver(status,orderSn,index,type,orderType){
+                  let orderTakingParam={
+                  storeId:localStorage.storeId,
+                  type: type,
+                  orderId: orderSn,
+                  status: status,
+                  orderType: orderType,
+                  channelId: localStorage.channelId,
+                  token: localStorage.token
+                };
+                 orderTaking(orderTakingParam).then((res)=>{
+                   console.log(res)
+                    if(res.data.code=='0'){
+                       this.myOrderList.splice(index,1);
+                       if(orderType==1){
+                        //   this.$alert('接单成功');
+                       }else{
+                        //   this.$alert('已完成');
+                       } 
+                      
+                    }else{
+                        this.$alert(res.data.msg);
+                    }
+                })
+          },
+          onLoad(){
+             this.loading = true
+             this.useGetList()
+            //  this.batchPrint()
+          },
+          logOut(){
+              localStorage.removeItem('token');
+              this.$router.push({name: 'userLogin'})
+          },
+          panDuanLogin(){
+              if(!localStorage.token){
+                  this.$router.push({name:'userLogin'})
+              }
           }
-        }
+        },
+        created() {
+           this.getPrintSn();
+           this.useGetPrinterData();
+           this.panDuanLogin();
+            this.shuaxin()
+             console.log("printType===================");
+             this.loginToken=localStorage.token;
+            if(this.getPrintModel==1){
+                this.printType='XP-58ⅡH'
+               console.log('XP-58ⅡH');
+            }else if(this.getPrintModel==2){
+                console.log('FP-V58WC');
+                this.printType='FP-V58WC'
+
+            }
+           
+          /*
+            PAZU 客户端js。需要html中引入本文件
+            */
+           
+        },
+        mounted() {
+           this.getOldOrderList();
+        },
+        destroyed() {
+             clearInterval(this.timer);
+              this.timer = null;
+        },
+        computed: {
+
+        },
+
 }
+
+
 </script>
 
 <style lang="scss" scoped>
+html{
+      scrollbar-track-color:#fff;
+}
+body{
+    // scrollbar-track-color: white;
+    
+}
+
  .top{
      width: 14.4rem;
      height: 0.9rem;
@@ -194,9 +870,9 @@ export default {
             .statusCtrl{
                 float: right;
                 overflow: hidden;
-                margin-left: 1.6rem;
+                margin-left: 4.3rem;
                 .close{
-                    width: 0.2rem;
+                    width: 0.19rem;
                     height: 0.2rem;
                     display: block;
                     float: left;
@@ -204,14 +880,15 @@ export default {
                 .logout{
                     float: left;
                     margin-left: 0.12rem;
-                    height: 0.28rem;  
+                    height: 0.28rem;
+                    font-size: 0.16rem;
                 }
             }
-            
+
          }
      }
  }
-//  
+//
  .orderControl{
      width: 14.4rem;
      overflow: hidden;
@@ -221,7 +898,7 @@ export default {
         //  height: 6rem;
          float: left;
          overflow: hidden;
-         
+
          .leftDesc{
             background: #FFF5F4;
             width: 100%;
@@ -252,6 +929,7 @@ export default {
       float: left;
       background: #FFF5F4;
       font-size: 0.16rem;
+      position: relative;
     //   overflow: hidden;
       .el-tabs{
           width: 6.36rem;
@@ -282,26 +960,112 @@ export default {
            }
            /deep/ .el-tabs__content{
                background: #F2F2F2;
-               padding-bottom: 0.1rem;
+            //    margin-bottom: 0.1rem;
                background: #FFFFFF;
+               height: 5.36rem;
+
            }
+      }
+       .containNewOrder::-webkit-scrollbar-thumb{
+           background: #F75745;
+           -webkit-border-radius: 0.04rem;
+          }
+        .containNewOrder::-webkit-scrollbar{
+            border: none;
+            background: white;
+             width: 0.08rem;
+            //  height: 3rem;
+            //  margin-right: 0.04rem; 
+        }
+      .containNewOrder{
+          height: 4.8rem;
+          width: 6.33rem;//全宽6.36
+          overflow: hidden;
+          overflow-y: scroll;
+          -ms-overflow-style: none;
+          .van-list{
+            //   min-height: 4.85rem;
+              /deep/ .van-list__finished-text{
+                  margin-left: 0.2rem;
+                  margin-top: 0.3rem;
+                  font-size: 0.15rem;
+                  color: #F75745; 
+                  text-align: center;            
+                  }
+              /deep/ .van-loading__text{
+                      margin-left: 0.2rem;;
+                  }
+          }
+      }
+      .noOrder{
+          widows: 6.04rem;
+          height: 4.4rem;
+          margin-top: 0.1rem;
+          margin-left: 0.16rem;
+          overflow: hidden;
+          img{
+              display: block;
+              width: 0.9rem;
+              height: 0.9rem;
+              margin:  auto;
+              margin-top: 1.33rem;
+          }
+          p{
+              width: 1rem;
+              margin: 0.16rem auto;
+              font-size: 0.14rem;
+              color: #666666;
+          }
       }
       .newOrder{
           width: 6.04rem;
           overflow: hidden;
           margin-top: 0.1rem;
-          background: #FFF5F4;
+        //   background: #FFF5F4;
           font-size: 0.14rem;
           margin-left: 0.16rem;
           color: #666666;
+        .checkStatus{
+        width: 0.4rem;
+        height: 2.4rem;
+        background: #ffffff;
+        float: left;
+        // display: none;
+        .checked{
+            width: 0.2rem;
+            height: 0.2rem;
+            background: #409EFF;
+            border-radius: 0.1rem;
+            margin-top: 0.8rem;
+            text-align: center;
+            line-height: 0.2rem;
+            color: #ffffff;
+        }
+        .unchecked{
+            width: 0.2rem;
+            height: 0.2rem;
+            border-radius: 0.1rem;
+            border: 1px solid #D3DCE4;
+            color: white;
+             margin-top: 0.8rem;
+        }
+       }
+       .orderDetail{
+           width: 6.14rem;
+           overflow: hidden;
+           background: #FFF5F4;
+       }
+       .smallOrderdetail{
+              width: 5.64rem;
+              background: #FFF5F4;
+         }
 
           .newOrderLeft{
-        //   width: 240px;
           width: 2.43rem;
           padding-left: 0.1rem;
           margin-top: 0.15rem;
           float: left;
-          border-right: 2px dashed #CECECE;
+        //   border-right: 2px dashed #CECECE;
           margin-bottom: 0.15rem;
           .number{
               float: left;
@@ -320,13 +1084,33 @@ export default {
               float: left;
                font-size: 0.12rem;
           }
-          
+
           }
+          .neworderRight::-webkit-scrollbar {
+            // width: 0px;
+            background: #F75745;
+            width: 0.1rem;
+            -webkit-border-radius: 0.04rem;
+            border: none;
+            // height: 1.07rem;
+          }
+          .neworderRight::-webkit-scrollbar-thumb{
+           background: #F75745;
+           
+          }
+          .neworderRight::-ms-scrollbar{
+            width: 0px;
+           }
           .neworderRight{
-              width: 3.6rem;
               float: left;
+              width: 3.2rem;
+              height: 1.58rem;
+              margin-top: 0.2rem;
+              overflow: hidden;
+              overflow-y:auto;;
+            //   overflow-x:hidden;//去除横向滚动条
               .orderInfo{
-                  width: 3.37rem;
+                  width: 2.97rem;
                   height: 0.32rem;
                   margin-top: 0.2rem;
                   margin-left: 0.2rem;
@@ -335,7 +1119,7 @@ export default {
                       height: 0.32rem;
                       display: block;
                       float: left;
-                      border: 1px solid grey;
+                    //   border: 1px solid grey;
                   }
                   .goodsName{
                       width: 1.12rem;
@@ -345,11 +1129,11 @@ export default {
                       overflow: hidden;
                       text-overflow: ellipsis;
                       white-space: nowrap;
-                      
+
                   }
                   .goodsNum{
                       float: left;
-                      margin-left: 0.8rem;
+                      margin-left: 0.25rem;
                       line-height: 0.32rem;
                   }
                   .goodsPrice{
@@ -376,11 +1160,11 @@ export default {
           }
           .fee{
               width: 2.33rem;
-              margin-top: 0.2rem;
+              margin-top: 0.1rem;
                .actualFee{
                    margin-top: 0.1rem;
                }
-          } 
+          }
            .distribute{
               width: 5.73rem;
               margin-top: 0.2rem;
@@ -395,18 +1179,20 @@ export default {
                    color: white;
               }
               .zjDis{
-                 
+
               }
               .ptDis{
                   margin-left:0.24rem;
               }
               .printOrder{
                   float: right;
+                  margin-right: 0.35rem;
               }
           }
       }
-         
-      .batchPrint{
+
+     }
+     .batchPrint{
           width: 1.2rem;
           height: 0.36rem;
           text-align: center;
@@ -416,10 +1202,17 @@ export default {
           color: #FFFFFF;
           border-radius: 0.04rem ;
           margin-left: 0.16rem;
+          position: absolute;
+          left: 0.1rem;
+          top: 5.5rem;
+          display: block;
       }
       .sureOrCancle{
           margin-top:  0.1rem;
+          position: absolute;
           display: none;
+           left: 0.1rem;
+          top: 5.5rem;
             button{
                 height: 0.36rem;
                 text-align: center;
@@ -436,11 +1229,9 @@ export default {
                      width: 1.46rem;
                   }
               }
-       
-     }
      .print{
          width: 5.28rem;
-        //  height: 600px;
+         height: 5.82rem;
          background: #FDFDFD;
          float: left;
          margin-top: 0.16rem;
@@ -451,7 +1242,7 @@ export default {
     .printTop{
         width: 5.28rem;
         margin-top: 0.16rem;
-        font-size: 0.16rem;
+        font-size: 0.15rem;
         height: 0.24rem;
         color: #333333;
         line-height: 0.24rem;
@@ -461,6 +1252,11 @@ export default {
             float: left;
             margin-left: 0.2rem;
         }
+        // .unAddPrint{
+        //  text-align: center;
+        //  color: #333333;
+        //  font-weight: bold;
+        // }
         .printType{
             float: left;
             margin-left: 0.06rem;
@@ -508,7 +1304,7 @@ export default {
             color: white;
         }
     }
-    .printStatus{
+    .printQueue{
         width: 4.88rem;
         height: 0.34rem;
         margin: 0.1rem auto;
@@ -521,19 +1317,79 @@ export default {
     .preview{
         width: 100%;
         // height: 540px;
-        background: #FDFDFD;
-        margin-top: 10px;
+        background: #FFFFFF;
+        margin-top: 0.3rem;
         .previewDecs{
             width: 100%;
             font-size: 0.17rem;
             font-weight: bold;
             text-align: center;
         }
+        .bg_PrintData::-webkit-scrollbar{
+            width: 0;
+        }
+        .bg_PrintData::-webkit-scrollbar-thumb{
+           background: #F75745;
+           width: 0.04rem;
+          }
+        .bg_PrintData::-ms-scrollbar{
+            width: 0;
+        }
+        .bg_PrintData::scrollbar{
+
+        }
+        .-ms-bg_PrintData{
+            overflow:hidden;
+          
+        }
         .bg_PrintData{
             width: 4.88rem;
             height: 4.18rem;
             margin: 0.1rem auto;
-            border: 1px solid;
+            // border: 1px solid;
+            overflow-y: scroll;
+            overflow-x:hidden;//去除横向滚动条
+            .unAddPrintImg{
+                width:2.5rem;
+                height: 1.9rem;
+                display: block;
+                margin: auto;
+            }
+            .printDetail{
+                width: 4.88rem;
+                div{
+                    width: 3.9rem;
+                    height: 0.3rem;
+                    margin: 0.1rem auto;
+                    font-size: 0.14rem;
+                    span{
+                        width: 1.13rem;
+                        display: block;
+                        float: left;
+                        text-align: right;
+                    }
+                    select,input{
+                        border: 1px solid #C3C3C3;
+                        width: 2.5rem;
+                        height: 0.3rem;
+                        float: left;
+                        margin-left: 0.12rem ;
+                        outline: none;
+                        box-sizing: border-box;
+                    }
+                    // input{
+
+                    // }
+                }
+                .addPrint{
+                    width:4.6rem;
+                    height:0.36rem;
+                    background: #F75745;
+                    color: #FFFFFF;
+                    text-align: center;
+                    font-size: 0.14rem;
+                }
+            }
         }
         #PrintData{
           margin: auto !important;
@@ -542,4 +1398,61 @@ export default {
     }
      }
  }
+ .printStatus{
+         width: 3.48rem;
+         height: 2.58rem;
+         background: #FFFFFF;
+         position: fixed;
+         top: 2.24rem;
+         left:  5.46rem;
+         box-shadow: 0 1px 6px rgba(0,0,0,.117647), 0 1px 4px rgba(0,0,0,.117647);
+         display: none;
+        .statusContent{
+         width: 3.48rem;
+         height: 2.1rem;
+         font-size: 0.14rem;
+         overflow: hidden;
+         .statusTitle{
+             width: 3.48rem;
+             height: 0.15rem;
+             text-align: center;
+             margin: 0.2rem auto;
+         }
+         .loadingImg{
+             width: 0.48rem;
+             height: 0.08rem;
+             display: block;
+             margin: 0.3rem auto;
+         }
+         .state2Img{
+             width: 0.4rem;
+             height: 0.3rem;
+             display: block;
+             margin: 0.1rem auto;
+         }
+         .state3Img{
+             width: 0.3rem;
+             height: 0.3rem;
+             display: block;
+             margin: 0.2rem auto;
+         }
+         .printImg{
+             width: 0.91rem;
+             height: 0.91rem;
+             display: block;
+             margin: 0.1rem auto;
+         }
+         .printStatusSure{
+             width: 3.48rem;
+             height: 0.47rem;
+             text-align: center;
+             line-height: 0.47rem;
+             background: white;
+             position: absolute;
+             bottom: 0;
+             color: #F75745;
+             border-top: 1px dashed #CCCCCC;
+         }
+        }
+     }
 </style>

@@ -1,19 +1,20 @@
 <template>
     <div class="userLogin">
+    <shade v-if="showShade"/>
     <div class="top">
         <!-- 头部 -->
- 
+
         <div class="topMid">
             <img src="../../assets/img/loginLogo.png" alt="" class="logo">
             <span class="line"></span>
             <p class="descLogin">用户登录</p>
         </div>
     </div>
-    <div class="middle">  
+    <div class="middle">
         <!-- 商户截图/登录区域 -->
         <div class="middleContent">
             <div class="middleLeft">
-               <img src="" alt="" class="bcImg">
+               <!-- <img src="" alt="" class="bcImg"> -->
             </div>
             <div class="middleRight" v-if="toLogin">
                 <!-- 扫码登录 -->
@@ -21,9 +22,9 @@
                    扫码登录
                </p>
 
-               <img src="" alt="" class="loginImg" v-if="control">
+               <img :src="imgUrl" alt="" class="loginImg" v-if="control">
                <img src="" alt="" class="loginImg" v-else @click=" refurbish">
-               <p class="loginDesc">
+               <p class="loginDesc" ref="loginDesc">
                    请使用商户或店员账号扫码登录
                </p>
                <div class="rightBottom" @click="changeLog">
@@ -35,16 +36,16 @@
                <p class="rightDesc" >
                    渠道选择
                </p>
-            <div class="localPlay" @click="toLog">
+            <div class="localPlay" @click="toLocal">
                <img class="localImg" src="../../assets/img/loginLogo.png" alt="" >
                <p class="localTitle">本地玩</p>
             </div>
-            <div class="xiangChengPlay" @click="toLog">
+            <div class="xiangChengPlay" @click="toXiangCheng">
                <img class="xiangChengImg" src="../../assets/img/loginXiangCheng.png" alt="" >
-               <p class="xiangChenTitle">本地玩</p>
+               <p class="xiangChenTitle">香城玩</p>
             </div>
-             
-               <p class="loginDescElse">
+
+               <p class="loginDescElse" >
                    请使用商户或店员账号扫码登录
                </p>
                <div class="rightBottom" @click="changeLog">
@@ -59,32 +60,139 @@
 </template>
 
 <script>
-import foot from '@/components/foot.vue'
+import foot from '@/components/foot.vue';
+import {merchantLogin,toMerchantLogin} from '../../service/getData'
+import shade from "./Shade";
+
 export default {
     data() {
         return {
-            control: false,
+            control: true,
             toLogin:true,
+            imgUrl:'',
+            channelId:"1045",
+            timer: null,
+            merchantLoginKey:'',
+            flag: 0,
+            showShade:false,
         }
     },
    components: {
      foot,
+     shade,
    },
     methods: {
         refurbish(){
             alert('1')
         },
-        toLog(){
+        toLocal(){
+        this.toLogin=true;
+        this.channelId='1045';
+        this.readyLogin();
+        },
+        toXiangCheng(){
         this.toLogin=true
-        console.log(this.toLogin)
+        this.channelId='1008';
+        this.readyLogin();
         },
         changeLog(){
             this.toLogin=!this.toLogin;
-        }
+        },
+        readyLogin(){
+
+             merchantLogin({channelId: this.channelId}).then(res =>{
+             console.log(res);
+             this.imgUrl=res.data.data.qrCodeUrl;
+             this.merchantLoginKey=res.data.data.sessionId;
+        })
+
+        },
+        isLogin(){
+             this.timer=setInterval(()=>{
+             merchantLogin({channelId: this.channelId,merchantLoginKey:this.merchantLoginKey}).then(res =>{
+            console.log(res.data.code)
+            if(res.data.code=='0'){
+                if(res.data.data.loginStatus=='1'){
+                    localStorage.token=res.data.data.token
+                    localStorage.userId=res.data.data.userId;
+                    localStorage.storeId=res.data.data.storeId;
+                    localStorage.channelId=this.channelId;
+                    console.log(res)
+                    this.$router.push({name:'orderList'})
+                 }
+                 console.log(1)
+            }else{
+                  this.$alert(res.data.message)
+                  clearInterval(this.timer);
+                  this.timer = null;
+                  window.location.reload()
+            }
+
+        })
+            },2000)
+        },
+        whetherLogin(){
+            if(localStorage.token){
+                this.$router.push({name:'orderList'})
+            }
+        },
+
+          IEVersion() {// 判断ie版本 2020 04 30 --陈圣乐
+            var userAgent = navigator.userAgent; //取得浏览器的userAgent字符串
+            var isIE =
+                userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
+            var isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
+            var isIE11 =
+                userAgent.indexOf("Trident") > -1 && userAgent.indexOf("rv:11.0") > -1;
+            if (isIE) {
+                var reIE = new RegExp("MSIE (\\d+\\.\\d+);");
+                reIE.test(userAgent);
+                var fIEVersion = parseFloat(RegExp["$1"]);
+                if (fIEVersion == 7) {
+                return 7;
+                } else if (fIEVersion == 8) {
+                return 8;
+                } else if (fIEVersion == 9) {
+                return 9;
+                } else if (fIEVersion == 10) {
+                return 10;
+                } else {
+                return 6; //IE版本<=7
+                }
+            } else if (isEdge) {
+                return "edge"; //edge
+            } else if (isIE11) {
+                return 11; //IE11
+            } else {
+                return 12; //不是ie浏览器
+            }
+            }
+
     },
-    
+
     mounted() {
+        // this.readyLogin();
+        // this.isLogin();
+        // this.whetherLogin();
         
+         //判读ie浏览器版本低于10就提示升级浏览器 
+    this.flag = this.IEVersion();
+    if (this.flag < 10) {
+        this.showShade=true;
+        console.log('低于ie10')
+    } else {
+      this.readyLogin();
+      this.isLogin();
+      this.whetherLogin();
+      console.log('ie内核'+ this.flag)
+    }// 2020 04 30 --陈圣乐
+        // this.$axios.get('https://alpha-push.fpwan.com/api/store/login',{params:{channelId:'1045'}}).then(res =>{
+        //     console.log(res)
+        // })
+    },
+    beforeDestroy() {
+         clearInterval(this.timer);
+            this.timer = null;
     },
 }
 </script>
@@ -134,12 +242,12 @@ export default {
              float: left;
              margin-left: 2.2rem;
              margin-top: 1.04rem;
-             .bcImg{
-              width: 5.8rem;
-             height: 3.35rem; 
-             display: block;
-             border: 1px solid grey;
-             }
+            //  .bcImg{
+            //   width: 5.8rem;
+            //  height: 3.35rem;
+            //  display: block;
+            //  border: 1px solid grey;
+            //  }
          }
          .middleRight{
              width: 3.16rem;
@@ -158,7 +266,6 @@ export default {
              display: block;
              width: 1.83rem;
              height: 1.83rem;
-             border: 1px solid slategray;
              margin: auto;
              margin-top: 0.2rem;
            }
@@ -224,8 +331,8 @@ export default {
                border-top:2px dashed #CCCCCC ;
            }
            }
-         
-   
+
+
  }
- 
+
 </style>

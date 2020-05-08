@@ -1,17 +1,17 @@
 <template>
        <footer class="foot">
              <div class="footLeft">
-                 <p class="kefu"><span :style="{'font-size':'14px'}"> 客服电话</span>：XXXX-XXXXXXXX</p>
-                 <p class="beian">鄂ICP备XXXXXXXX号-X · 鄂公网安备XXXXXXXXXX号</p>
+                 <p class="kefu"><span :style="{'font-size':'14px'}"> 客服电话</span>：18727826466</p>
+                 <p class="beian">鄂ICP备17009451号-24 · 鄂公网安备 42120202000205号</p>
              </div>
              <div class="footRight">
-                 <div :style="{'float':'left'}">
+                 <!-- <div :style="{'float':'left'}">
                  <p class="down">下载app</p>
                  <img src="" alt="" class="appEwm">
-                 </div>
+                 </div> -->
                  <div :style="{'float':'left','margin-left':'0.75rem'}">
                  <p class="down">关注公众号 </p>
-                 <img src="" alt="" class="gzhEwm">
+                 <img src="../assets/img/loginGzh.jpg" alt="" class="gzhEwm">
                  </div>
              </div>
        </footer>
@@ -19,14 +19,14 @@
 
 <script>
 export default {
-    
+
 }
 </script>
 
 <style lang="scss" scoped>
 .foot{
-     width: 100%;
-     height: 1.68;
+     width: 14.4rem;
+     height: 1.68rem;
      overflow: hidden;
      font-size: 0.12rem;
      color: #333333;
