@@ -115,12 +115,8 @@ export default {
                 if(res.data.data.loginStatus=='1'){
                     localStorage.token=res.data.data.token
                     localStorage.userId=res.data.data.userId;
-<<<<<<< HEAD
-                    sessionStorage.storeId=res.data.data.storeId;
-=======
                     localStorage.storeId=res.data.data.storeId;/*  */
                     //2
->>>>>>> d1ff213356fc56482c1191788f8790023068dafa
                     //1
                     localStorage.channelId=this.channelId;
                     console.log(res)
