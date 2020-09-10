@@ -116,7 +116,7 @@ export default {
                     localStorage.token=res.data.data.token
                     localStorage.userId=res.data.data.userId;
                     localStorage.storeId=res.data.data.storeId;
-                    //2
+                    //这是e盘，未git的
                     localStorage.channelId=this.channelId;
                     console.log(res)
                     this.$router.push({name:'orderList'})
@@ -134,7 +134,7 @@ export default {
         },
         whetherLogin(){
             if(localStorage.token){
-                this.$router.push({name:'orderList'})/*  */
+                this.$router.push({name:'orderList'})
             }
         },
 
