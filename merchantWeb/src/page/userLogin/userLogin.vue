@@ -116,8 +116,7 @@ export default {
                     localStorage.token=res.data.data.token
                     localStorage.userId=res.data.data.userId;
                     localStorage.storeId=res.data.data.storeId;
-                    //这是c盘，要传上git的
-                    //这是c盘，要传上git的
+                    //这是e盘，未git的。
                     localStorage.channelId=this.channelId;
                     console.log(res)
                     this.$router.push({name:'orderList'})
