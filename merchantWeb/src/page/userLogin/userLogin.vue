@@ -116,7 +116,8 @@ export default {
                     localStorage.token=res.data.data.token
                     localStorage.userId=res.data.data.userId;
                     localStorage.storeId=res.data.data.storeId;
-                    //2
+                    console.log(1)
+                    //这是C盘git提交过的
                     localStorage.channelId=this.channelId;
                     console.log(res)
                     this.$router.push({name:'orderList'})
